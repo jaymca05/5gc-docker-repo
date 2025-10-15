@@ -98,9 +98,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Package Open5GS files
-        # Assuming 'open5gs-docker/' contains the necessary deployment files (like docker-compose.yml)
+        # Package the entire checked-out repository content, assuming deployment files (like docker-compose.yml) are at the root.
         run: |
-          zip -r open5gs-package.zip open5gs-docker/
+          # Package the contents of the current directory, excluding the .git folder
+          zip -r open5gs-package.zip . -x .git/*
 
       - name: Deploy to server via SSH
         env:
@@ -116,6 +117,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no project@10.0.2.15 '
             echo "Deployment started on server..."
             cd /home/project
+            # Unzipping the package will extract all repository files here, including docker-compose.yml and service folders.
             unzip -o open5gs-package.zip
             echo "Pulling latest images (which were just pushed)..."
             docker-compose pull
