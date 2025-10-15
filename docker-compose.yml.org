@@ -3,8 +3,8 @@ services:
   base:
     build:
       context: ./base
-      dockerfile: ./base/Dockerfile
-    image: jaybhu05/open5gs-base:latest
+      dockerfile: Dockerfile
+    image: open5gs-base:latest
   mongodb:
     image: mongo:5.0
     container_name: mongodb
@@ -18,8 +18,8 @@ services:
   nrf:
     build:
       context: ./nrf
-      dockerfile: ./nrf/Dockerfile
-    image: jay.bhu05/open5gs-nrf:latest
+      dockerfile: Dockerfile
+    image: open5gs-nrf:latest
     depends_on:
       - base
       - mongodb
@@ -31,8 +31,8 @@ services:
   udm:
     build:
       context: ./udm
-      dockerfile: ./udm/Dockerfile
-    image: jay.bhu05/open5gs-udm:latest
+      dockerfile: Dockerfile
+    image: open5gs-udm:latest
     depends_on:
       - mongodb
       - nrf
@@ -44,8 +44,8 @@ services:
   ausf:
     build:
       context: ./ausf
-      dockerfile: ./ausf/Dockerfile
-    image: jay.bhu05/open5gs-ausf:latest
+      dockerfile: Dockerfile
+    image: open5gs-ausf:latest
     depends_on:
       - mongodb
       - nrf
@@ -56,8 +56,8 @@ services:
   pcf:
     build:
       context: ./pcf
-      dockerfile: ./pcf/Dockerfile
-    image: jay.bhu05/open5gs-pcf:latest
+      dockerfile: Dockerfile
+    image: open5gs-pcf:latest
     depends_on:
       - mongodb
       - nrf
@@ -68,8 +68,8 @@ services:
   amf:
     build:
       context: ./amf
-      dockerfile: ./amf/Dockerfile
-    image: jaybhu05/open5gs-amf:latest
+      dockerfile: Dockerfile
+    image: open5gs-amf:latest
     depends_on:
       - mongodb
       - nrf
@@ -80,8 +80,8 @@ services:
   smf:
     build:
       context: ./smf
-      dockerfile: ./smf/Dockerfile
-    image: jaybhu05/open5gs-smf:latest
+      dockerfile: Dockerfile
+    image: open5gs-smf:latest
     depends_on:
       - mongodb
       - nrf
@@ -93,8 +93,8 @@ services:
   upf:
     build:
       context: ./upf
-      dockerfile: ./upf/Dockerfile
-    image: jaybhu05/open5gs-upf:latest
+      dockerfile: Dockerfile
+    image: open5gs-upf:latest
     privileged: true
     depends_on:
       - smf
