@@ -1,4 +1,6 @@
-FROM open5gs-base:latest AS builder
+#FROM open5gs-base:latest AS builder
+ARG BASE_IMAGE_NAME
+FROM ${BASE_IMAGE_NAME} AS builder
 
 FROM ubuntu:22.04
 
