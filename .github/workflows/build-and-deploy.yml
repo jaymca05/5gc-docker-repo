@@ -1,4 +1,4 @@
-name: Build & Deploy Open5GS via Build-Push Action
+name: Build & Deploy Open5GS via Matrix Strategy
 
 on:
   push:
@@ -9,8 +9,17 @@ on:
       - main
 
 jobs:
-  build:
+  build_images:
+    name: Build & Push ${{ matrix.service }}
     runs-on: ubuntu-latest
+    
+    # Define the services to be built and pushed using a matrix
+    strategy:
+      fail-fast: false # Allows other services to continue building if one fails
+      matrix:
+        service: [base, nrf, udm, ausf, pcf, amf, smf, upf]
+        repository: [jaybhu05] # Centralize the repository name
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,47 +35,30 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build & push Open5GS images
-        uses: docker/build-push-action@v3
+          
+      # Build and push the image for the current matrix service
+      - name: Build & push ${{ matrix.service }} image
+        uses: docker/build-push-action@v5
         with:
-          mode: concurrency
+          # Context is the directory name, pulled from the matrix
+          context: ./${{ matrix.service }}
+          # Dockerfile is assumed to be 'Dockerfile' inside the context directory
+          file: ./${{ matrix.service }}/Dockerfile
           push: true
-          build: |
-            base:
-              context: ./base
-              dockerfile: Dockerfile
-              tags: jaybhu05/open5gs-base:latest
-            nrf:
-              context: ./nrf
-              dockerfile: Dockerfile
-              tags: jaybhu05/open5gs-nrf:latest
-            udm:
-              context: ./udm
-              dockerfile: Dockerfile
-              tags: jaybhu05/open5gs-udm:latest
-            ausf:
-              context: ./ausf
-              dockerfile: Dockerfile
-              tags: jaybhu05/open5gs-ausf:latest
-            pcf:
-              context: ./pcf
-              dockerfile: Dockerfile
-              tags: jaybhu05/open5gs-pcf:latest
-            amf:
-              context: ./amf
-              dockerfile: Dockerfile
-              tags: jaybhu05/open5gs-amf:latest
-            smf:
-              context: ./smf
-              dockerfile: Dockerfile
-              tags: jaybhu05/open5gs-smf:latest
-            upf:
-              context: ./upf
-              dockerfile: Dockerfile
-              tags: jaybhu05/open5gs-upf:latest
+          # Tags are defined using the matrix service name
+          tags: ${{ matrix.repository }}/open5gs-${{ matrix.service }}:latest
+
+  deploy:
+    name: Deploy to Server
+    needs: build_images # This job waits until ALL images in build_images are successful
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository (for deployment files)
+        uses: actions/checkout@v4
 
       - name: Package Open5GS files
+        # Assuming 'open5gs-docker/' contains the necessary deployment files (like docker-compose.yml)
         run: |
           zip -r open5gs-package.zip open5gs-docker/
 
@@ -74,15 +66,20 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          # Setup SSH key and permissions
           mkdir -p ~/.ssh
           echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
+          
+          # SCP and SSH commands
           scp -o StrictHostKeyChecking=no open5gs-package.zip project@10.0.2.15:/home/project/
           ssh -o StrictHostKeyChecking=no project@10.0.2.15 '
+            echo "Deployment started on server..."
             cd /home/project
             unzip -o open5gs-package.zip
+            echo "Pulling latest images (which were just pushed)..."
             docker-compose pull
+            echo "Bringing up services..."
             docker-compose up -d
           '
-
+          echo "Deployment command sent successfully."
