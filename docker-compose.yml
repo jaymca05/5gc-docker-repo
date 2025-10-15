@@ -1,6 +1,9 @@
-#version: "3.8"
+version: "3.8"
 services:
   base:
+    build:
+      context: ./base
+      dockerfile: Dockerfile
     image: open5gs-base:latest
   mongodb:
     image: mongo:5.0
@@ -13,7 +16,10 @@ services:
       - "27018:27018"
 
   nrf:
-    build: ./nrf
+    build:
+      context: ./nrf
+      dockerfile: Dockerfile
+    image: open5gs-nrf:latest
     depends_on:
       - base
       - mongodb
@@ -23,7 +29,10 @@ services:
       - LD_LIBRARY_PATH=/open5gs/lib:/open5gs/lib/x86_64-linux-gnu
 
   udm:
-    build: ./udm
+    build:
+      context: ./udm
+      dockerfile: Dockerfile
+    image: open5gs-udm:latest
     depends_on:
       - mongodb
       - nrf
@@ -33,7 +42,10 @@ services:
       - LD_LIBRARY_PATH=/open5gs/lib:/open5gs/lib/x86_64-linux-gnu
   
   ausf:
-    build: ./ausf
+    build:
+      context: ./ausf
+      dockerfile: Dockerfile
+    image: open5gs-ausf:latest
     depends_on:
       - mongodb
       - nrf
@@ -42,7 +54,10 @@ services:
       - core-net
 
   pcf:
-    build: ./pcf
+    build:
+      context: ./pcf
+      dockerfile: Dockerfile
+    image: open5gs-pcf:latest
     depends_on:
       - mongodb
       - nrf
@@ -51,7 +66,10 @@ services:
       - core-net
 
   amf:
-    build: ./amf
+    build:
+      context: ./amf
+      dockerfile: Dockerfile
+    image: open5gs-amf:latest
     depends_on:
       - mongodb
       - nrf
@@ -60,7 +78,10 @@ services:
       - core-net
 
   smf:
-    build: ./smf
+     build:
+      context: ./smf
+      dockerfile: Dockerfile
+    image: open5gs-smf:latest
     depends_on:
       - mongodb
       - nrf
@@ -70,7 +91,10 @@ services:
       - core-net
 
   upf:
-    build: ./upf
+    build:
+      context: ./upf
+      dockerfile: Dockerfile
+    image: open5gs-upf:latest
     privileged: true
     depends_on:
       - smf
