@@ -2,8 +2,8 @@
 services:
   base:
     build:
-      context: ./base
-      dockerfile: ./base/Dockerfile
+      context: ./base 
+      dockerfile: Dockerfile
     image: jaybhu05/open5gs-base:latest
   mongodb:
     image: mongo:5.0
@@ -18,7 +18,7 @@ services:
   nrf:
     build:
       context: ./nrf
-      dockerfile: ./nrf/Dockerfile
+      dockerfile: Dockerfile
     image: jay.bhu05/open5gs-nrf:latest
     depends_on:
       - base
@@ -31,7 +31,7 @@ services:
   udm:
     build:
       context: ./udm
-      dockerfile: ./udm/Dockerfile
+      dockerfile: Dockerfile
     image: jay.bhu05/open5gs-udm:latest
     depends_on:
       - mongodb
@@ -44,7 +44,7 @@ services:
   ausf:
     build:
       context: ./ausf
-      dockerfile: ./ausf/Dockerfile
+      dockerfile: Dockerfile
     image: jay.bhu05/open5gs-ausf:latest
     depends_on:
       - mongodb
@@ -56,7 +56,7 @@ services:
   pcf:
     build:
       context: ./pcf
-      dockerfile: ./pcf/Dockerfile
+      dockerfile: Dockerfile
     image: jay.bhu05/open5gs-pcf:latest
     depends_on:
       - mongodb
@@ -68,7 +68,7 @@ services:
   amf:
     build:
       context: ./amf
-      dockerfile: ./amf/Dockerfile
+      dockerfile: Dockerfile
     image: jaybhu05/open5gs-amf:latest
     depends_on:
       - mongodb
@@ -80,7 +80,7 @@ services:
   smf:
     build:
       context: ./smf
-      dockerfile: ./smf/Dockerfile
+      dockerfile: Dockerfile
     image: jaybhu05/open5gs-smf:latest
     depends_on:
       - mongodb
@@ -93,7 +93,7 @@ services:
   upf:
     build:
       context: ./upf
-      dockerfile: ./upf/Dockerfile
+      dockerfile: Dockerfile
     image: jaybhu05/open5gs-upf:latest
     privileged: true
     depends_on:
