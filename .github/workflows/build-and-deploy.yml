@@ -1,4 +1,4 @@
-name: Build and Deploy Open5GS
+name: Build & Deploy Open5GS via Build-Push Action
 
 on:
   push:
@@ -11,49 +11,78 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (for multi-arch if needed)
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
-        uses: actions/cache@v3
+      - name: Log in to Docker registry
+        uses: docker/login-action@v3
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker images
+      - name: Build & push Open5GS images
         uses: docker/build-push-action@v3
         with:
-          context: .
+          mode: concurrency
           push: true
-          tags: |
-            jaybhu05/open5gs-base:latest
-            jaybhu05/open5gs-nrf:latest
-            jaybhu05/open5gs-amf:latest
-            jaybhu05/open5gs-smf:latest
-            jaybhu05/open5gs-upf:latest
-            jaybhu05/open5gs-udm:latest
-            jaybhu05/open5gs-udr:latest
-            jaybhu05/open5gs-ausf:latest
-            jaybhu05/open5gs-pcf:latest
+          build: |
+            base:
+              context: ./base
+              dockerfile: Dockerfile
+              tags: jaybhu05/open5gs-base:latest
+            nrf:
+              context: ./nrf
+              dockerfile: Dockerfile
+              tags: jaybhu05/open5gs-nrf:latest
+            udm:
+              context: ./udm
+              dockerfile: Dockerfile
+              tags: jaybhu05/open5gs-udm:latest
+            ausf:
+              context: ./ausf
+              dockerfile: Dockerfile
+              tags: jaybhu05/open5gs-ausf:latest
+            pcf:
+              context: ./pcf
+              dockerfile: Dockerfile
+              tags: jaybhu05/open5gs-pcf:latest
+            amf:
+              context: ./amf
+              dockerfile: Dockerfile
+              tags: jaybhu05/open5gs-amf:latest
+            smf:
+              context: ./smf
+              dockerfile: Dockerfile
+              tags: jaybhu05/open5gs-smf:latest
+            upf:
+              context: ./upf
+              dockerfile: Dockerfile
+              tags: jaybhu05/open5gs-upf:latest
 
       - name: Package Open5GS files
         run: |
           zip -r open5gs-package.zip open5gs-docker/
 
-      - name: Deploy to server
-        run: |
-          scp -i ~/.ssh/id_ed25519pen5gs-package.zip project@10.0.2.15:/home/project/
-          ssh -i ~/.ssh/id_ed25519ser@yourserver 'cd /home/project && unzip open5gs-package.zip && docker-compose pull && docker-compose up -d'
-          #run: |
-          #scp open5gs-package.zip user@yourserver:/path/to/deploy/
-          #ssh user@yourserver 'cd /path/to/deploy && unzip open5gs-package.zip && docker-compose pull && docker-compose up -d'
+      - name: Deploy to server via SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          scp -o StrictHostKeyChecking=no open5gs-package.zip project@10.0.2.15:/home/project/
+          ssh -o StrictHostKeyChecking=no project@10.0.2.15 '
+            cd /home/project
+            unzip -o open5gs-package.zip
+            docker-compose pull
+            docker-compose up -d
+          '
 
