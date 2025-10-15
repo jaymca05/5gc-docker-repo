@@ -1,0 +1,31 @@
+logger:
+  file:
+    path: /open5gs/log/upf.log
+    level: info
+
+global:
+  max:
+    ue: 1024
+    peer: 64
+
+upf:
+  pfcp:
+    server:
+      - address: 127.0.0.23
+        port: 8805        # default PFCP port
+
+  gtpu:
+    server:
+      - address: 127.0.0.23
+        port: 2152        # default GTP-U port
+
+  # Define data plane subnets (N3 / N6 interfaces)
+  session:
+    - subnet: 10.45.0.0/16    # example user plane subnet
+      gateway: 10.45.0.1     # gateway address in that subnet
+      dev: ogstun
+
+  # (Optional) If supporting IPv6, include IPv6 subnets too
+  # session6:
+  #   - subnet: 2001:db8:cafe::/48
+  #     gateway: 2001:db8:cafe::1

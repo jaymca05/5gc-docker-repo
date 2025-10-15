@@ -1,0 +1,8 @@
+pcf:
+  sbi:
+    server:
+      - address: 127.0.0.16
+        port: 7777
+    client:
+      nrf:
+        - uri: http://127.0.0.10:7777  # <-- THIS IS CRITICAL

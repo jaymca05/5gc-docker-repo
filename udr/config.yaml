@@ -1,0 +1,28 @@
+# ------------------------------------------------------------------
+# UDR Configuration for Open5GS
+# ------------------------------------------------------------------
+logger:
+  file:
+    path: /open5gs/log/udr.log
+    level: info
+
+global:
+  max:
+    ue: 1024
+    peer: 64
+
+      #db:
+  # Must specify URI for MongoDB backend
+  #uri: mongodb://mongo:27018/open5gs
+
+udr:
+  sbi:
+    server:
+      - address: 127.0.0.13    # or your container interface / host IP
+        port: 7777
+    client:
+      nrf:
+        - uri: http://127.0.0.10:7777
+  metrics:
+    addr: 127.0.0.13
+    port: 9090

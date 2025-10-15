@@ -1,0 +1,46 @@
+logger:
+  file:
+    path: /open5gs/log/smf.log
+    level: info
+
+global:
+  max:
+    ue: 1024
+    peer: 64
+
+smf:
+  sbi:
+    server:
+      - address: 127.0.0.22
+        port: 7777
+    client:
+      nrf:
+        - uri: http://127.0.0.10:7777
+
+  info:
+    - s_nssai:
+      - sst: 1
+        dnn:
+          - internet
+
+  # PFCP / N4, to communicate with UPF
+  pfcp:
+    server:
+      - address: 127.0.0.22
+
+  session:
+    - subnet: 10.45.0.0/16
+      gateway: 10.45.0.1
+
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+
+  mtu: 1500
+
+  gtpu:
+    server:
+      - address: 127.0.0.22
+
+  # If your version supports freeDiameter (for PCRF or AAA)
+  #freeDiameter: /etc/freeDiameter/smf.conf

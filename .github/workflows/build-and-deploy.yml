@@ -1,0 +1,59 @@
+name: Build and Deploy Open5GS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: |
+            jaybhu05/open5gs-base:latest
+            jaybhu05/open5gs-nrf:latest
+            jaybhu05/open5gs-amf:latest
+            jaybhu05/open5gs-smf:latest
+            jaybhu05/open5gs-upf:latest
+            jaybhu05/open5gs-udm:latest
+            jaybhu05/open5gs-udr:latest
+            jaybhu05/open5gs-ausf:latest
+            jaybhu05/open5gs-pcf:latest
+
+      - name: Package Open5GS files
+        run: |
+          zip -r open5gs-package.zip open5gs-docker/
+
+      - name: Deploy to server
+        run: |
+          scp -i ~/.ssh/id_ed25519pen5gs-package.zip project@10.0.2.15:/home/project/
+          ssh -i ~/.ssh/id_ed25519ser@yourserver 'cd /home/project && unzip open5gs-package.zip && docker-compose pull && docker-compose up -d'
+          #run: |
+          #scp open5gs-package.zip user@yourserver:/path/to/deploy/
+          #ssh user@yourserver 'cd /path/to/deploy && unzip open5gs-package.zip && docker-compose pull && docker-compose up -d'
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+

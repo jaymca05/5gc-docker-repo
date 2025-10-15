@@ -1,0 +1,90 @@
+#version: "3.8"
+services:
+  base:
+    image: open5gs-base:latest
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - core-net
+    ports:
+      - "27018:27018"
+
+  nrf:
+    build: ./nrf
+    depends_on:
+      - base
+      - mongodb
+    networks:
+      - core-net
+    environment:
+      - LD_LIBRARY_PATH=/open5gs/lib:/open5gs/lib/x86_64-linux-gnu
+
+  udm:
+    build: ./udm
+    depends_on:
+      - mongodb
+      - nrf
+    networks:
+      - core-net
+    environment:
+      - LD_LIBRARY_PATH=/open5gs/lib:/open5gs/lib/x86_64-linux-gnu
+  
+  ausf:
+    build: ./ausf
+    depends_on:
+      - mongodb
+      - nrf
+      - udm
+    networks:
+      - core-net
+
+  pcf:
+    build: ./pcf
+    depends_on:
+      - mongodb
+      - nrf
+      - udm
+    networks:
+      - core-net
+
+  amf:
+    build: ./amf
+    depends_on:
+      - mongodb
+      - nrf
+      - udm
+    networks:
+      - core-net
+
+  smf:
+    build: ./smf
+    depends_on:
+      - mongodb
+      - nrf
+      - amf
+      - udm
+    networks:
+      - core-net
+
+  upf:
+    build: ./upf
+    privileged: true
+    depends_on:
+      - smf
+      - nrf
+      - mongodb
+    devices:
+      - /dev/net/tun
+    networks:
+      - core-net
+
+
+volumes:
+  mongo_data:
+
+networks:
+  core-net:
+    driver: bridge
