@@ -1,4 +1,4 @@
-version: "3.8"
+#version: "3.8"
 services:
   base:
     build:
@@ -78,7 +78,7 @@ services:
       - core-net
 
   smf:
-     build:
+    build:
       context: ./smf
       dockerfile: Dockerfile
     image: open5gs-smf:latest
