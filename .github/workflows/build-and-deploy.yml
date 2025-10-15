@@ -48,6 +48,14 @@ jobs:
           # Tags are defined using the matrix service name
           tags: ${{ matrix.repository }}/open5gs-${{ matrix.service }}:latest
 
+          # --- FIX: Pass the fully qualified base image name as a build argument ---
+          build-args: |
+            BASE_IMAGE_NAME=${{ matrix.repository }}/open5gs-base:latest
+            
+          # Optional: Enable caching from the previously pushed image
+          cache-from: type=registry,ref=${{ matrix.repository }}/open5gs-${{ matrix.service }}:latest
+          cache-to: type=inline
+
   deploy:
     name: Deploy to Server
     needs: build_images # This job waits until ALL images in build_images are successful
@@ -83,3 +91,4 @@ jobs:
             docker-compose up -d
           '
           echo "Deployment command sent successfully."
+
