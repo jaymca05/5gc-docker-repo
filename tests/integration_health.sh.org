@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+echo "🚀 Starting Open5GS stack for integration tests..."
+cd ..
+docker-compose build --build-arg BASE_IMAGE_NAME=open5gs-base:latest
+wait 30
+docker-compose up -d
+#docker-compose -f docker-compose.yml up -d --build
+cd -
+# wait for NRF to start
+echo "⏳ Waiting for NRF to be ready..."
+RETRIES=30
+until curl -sf http://localhost:7777/nnrf-nfm/v1/nf-instances >/dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
+  sleep 2
+  RETRIES=$((RETRIES - 1))
+done
+
+if [ $RETRIES -eq 0 ]; then
+  echo "❌ NRF did not become ready in time!"
+  docker-compose logs nrf
+  docker-compose down
+  exit 1
+fi
+
+echo "✅ NRF is up!"
+
+# check container logs for errors
+python3 tests/check_logs.py || {
+  echo "❌ Log check failed"
+  docker-compose down
+  exit 1
+}
+
+# verify NRF has registered instances
+echo "🧠 Checking NRF registration..."
+if ! curl -sf http://localhost:7777/nnrf-nfm/v1/nf-instances | jq '. | length' | grep -vq "0"; then
+  echo "❌ No NFs registered with NRF!"
+  docker-compose down
+  exit 1
+fi
+
+echo "✅ All network functions registered successfully!"
+echo "🧹 Cleaning up..."
+docker-compose down
+
+echo "🎉 Integration test PASSED!"
+
