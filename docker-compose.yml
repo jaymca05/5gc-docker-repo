@@ -1,9 +1,12 @@
 #version: "3.8"
+#added comment
 services:
   base:
     build:
       context: ./base 
       dockerfile: Dockerfile
+      args:
+        BASE_IMAGE_NAME: ${BASE_IMAGE_NAME}
     image: jaybhu05/open5gs-base:latest
   mongodb:
     image: mongo:5.0
@@ -25,6 +28,8 @@ services:
       - mongodb
     networks:
       - core-net
+    ports:
+      - "7777:7777"
     environment:
       - LD_LIBRARY_PATH=/open5gs/lib:/open5gs/lib/x86_64-linux-gnu
 
