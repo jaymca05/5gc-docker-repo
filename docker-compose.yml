@@ -1,5 +1,4 @@
 #version: "3.8"
-#added comment
 services:
   base:
     build:
